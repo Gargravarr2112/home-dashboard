@@ -13,7 +13,7 @@ WEATHER_IMAGE_KEY = {0: "night-clear", 1: "day-clear", 2: "night-cloud", 3: "day
 RAIN_THRESHHOLD = 50 #%
 config = {}
 
-with open('src/weather.json', 'r') as configFile:
+with open('weather.json', 'r') as configFile:
 	logger.debug("Loading config file")
 	config = json.load(configFile)
 	logger.debug("Loaded config file")
@@ -27,7 +27,6 @@ def getWeather():
 	if weatherRequest.status_code != 200:
 		logger.error("Error retrieving weather: HTTP %d", weatherRequest.status_code)
 		return
-	logger.debug("Weather data: %s", weatherRequest.text)
 	weatherData = weatherRequest.json()
 	today = weatherData['SiteRep']['DV']['Location']['Period'][0]
 	date = datetime.datetime.strptime(today['value'], '%Y-%m-%dZ')
@@ -44,5 +43,5 @@ def getWeather():
 
 def getWeatherType(typeCode):
 	weatherName = METOFFICE_WEATHER_KEY[typeCode]
-	weatherImage = "img/{0}.png".format(WEATHER_IMAGE_KEY[typeCode])
+	weatherImage = "img/{0}.png".format(WEATHER_IMAGE_KEY[typeCode].replace('$t', 'night')) #TODO: pass in day or night and select accordingly
 	return (weatherName, weatherImage)

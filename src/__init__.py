@@ -4,6 +4,7 @@ import json
 import datetime
 import logging
 import weather
+import news
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -20,13 +21,29 @@ class DashboardFrame(wx.Frame):
 
 		panel = wx.Panel(self)
 
-		layout = wx.BoxSizer(wx.HORIZONTAL)
+		layout = wx.BoxSizer(wx.VERTICAL)
 
 		todaysWeather = weather.getWeather()
 		if todaysWeather:
-			weatherType = weather.getWeatherType(int(todaysWeather['W'])) #returns tuple of name and image filename
+			logger.info("Adding weather")
+			weatherCode = int(todaysWeather[0]['W'])
+			weatherType = weather.getWeatherType(weatherCode) #returns tuple of name and image filename
 			weatherGraphic = wx.StaticBitmap(panel, bitmap=wx.Bitmap(weatherType[1]))
-		layout.Add(weatherGraphic, wx.ID_ANY, wx.EXPAND | wx.ALL, 20)
+			weatherText = wx.StaticText(panel, label=weatherType[0])
+			layout.Add(weatherText, wx.ID_ANY, wx.EXPAND | wx.ALL, 20)
+			layout.Add(weatherGraphic, wx.ID_ANY, wx.EXPAND | wx.ALL, 20)
+
+		todaysNews = news.getTop3Articles()
+		if todaysNews:
+			logger.info("Addng news")
+			updatedTime = todaysNews['updateTime']
+			newsTitle = wx.StaticText(panel, label="News as of {0}".format(updatedTime))
+			layout.Add(newsTitle, wx.ID_ANY, wx.EXPAND | wx.ALL, 20)
+			headlines = []
+			for article in todaysNews['articles']:
+				headlines.append(article['title'])
+			newsList = wx.ListBox(panel, choices=headlines)
+			layout.Add(newsList, wx.ID_ANY, wx.EXPAND | wx.ALL, 20)
 
 		self.Show()
 

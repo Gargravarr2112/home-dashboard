@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 ENERGYHIVE_API = "https://www.energyhive.com/mobile_proxy/getEnergy"
 ENERGYHIVE_API_TOKEN = ""
 
-with open("src/power.json") as configFile:
+with open("power.json") as configFile:
 	logger.debug("Loading config file")
 	config = json.load(configFile)
 	logger.debug("Loaded config file")
