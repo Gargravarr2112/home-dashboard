@@ -32,18 +32,21 @@ class DashboardFrame(wx.Frame):
 			weatherText = wx.StaticText(panel, label=weatherType[0])
 			layout.Add(weatherText, wx.ID_ANY, wx.EXPAND | wx.ALL, 20)
 			layout.Add(weatherGraphic, wx.ID_ANY, wx.EXPAND | wx.ALL, 20)
+			if todaysWeather[1]:
+				rainText = wx.StaticText(panel, label="{0}% chance of rain predicted at {1}".format(todaysWeather[1][1], todaysWeather[1][0]))
+				layout.Add(rainText, wx.ID_ANY, wx.EXPAND | wx.ALL, 20)
 
-		todaysNews = news.getTop3Articles()
-		if todaysNews:
-			logger.info("Addng news")
-			updatedTime = todaysNews['updateTime']
-			newsTitle = wx.StaticText(panel, label="News as of {0}".format(updatedTime))
-			layout.Add(newsTitle, wx.ID_ANY, wx.EXPAND | wx.ALL, 20)
-			headlines = []
-			for article in todaysNews['articles']:
-				headlines.append(article['title'])
-			newsList = wx.ListBox(panel, choices=headlines)
-			layout.Add(newsList, wx.ID_ANY, wx.EXPAND | wx.ALL, 20)
+		# todaysNews = news.getTop3Articles()
+		# if todaysNews:
+		# 	logger.info("Addng news")
+		# 	updatedTime = todaysNews['updateTime']
+		# 	newsTitle = wx.StaticText(panel, label="News as of {0}".format(updatedTime))
+		# 	layout.Add(newsTitle, wx.ID_ANY, wx.EXPAND | wx.ALL, 20)
+		# 	headlines = []
+		# 	for article in todaysNews['articles']:
+		# 		headlines.append(article['title'])
+		# 	newsList = wx.ListBox(panel, choices=headlines)
+		# 	layout.Add(newsList, wx.ID_ANY, wx.EXPAND | wx.ALL, 20)
 
 		self.Show()
 
