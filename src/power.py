@@ -21,7 +21,7 @@ with open("power.json") as configFile:
 ENERGYHIVE_API_TOKEN = config["APIKey"]
 
 def getYesterdayPowerUse():
-	logger.info("Querying EnergyHive API for power use data")
+	logger.debug("Querying EnergyHive API for power use data")
 	requestParameters = { "token": ENERGYHIVE_API_TOKEN, "period": "day", "offset": "-1" }
 	powerUse = requests.get(ENERGYHIVE_API, requestParameters)
 	if powerUse.status_code != 200:
@@ -33,15 +33,19 @@ def getYesterdayPowerUse():
 fan = Energenie(FAN_CHANNEL)
 heater = Energenie(HEATER_CHANNEL)
 
-def toggleFan():
+def toggleFan(event=None):
+	logger.debug("Fan toggled")
 	return toggleSocket(fan)
 
-def toggleHeader():
+def toggleHeater(event=None):
+	logger.debug("Heater toggled")
 	return toggleSocket(heater)
 
 def toggleSocket(socket):
 	if socket.value:
+		logger.debug("Switching off")
 		socket.off()
 	else:
+		logger.debug("Switching on")
 		socket.on()
 	return socket.value
