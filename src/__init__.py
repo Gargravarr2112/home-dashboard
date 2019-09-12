@@ -1,5 +1,5 @@
 #Python modules
-import wx, requests, json, datetime, logging
+import wx, requests, json, datetime, time, logging
 #Custom modules
 import weather, news, power, routerstats, sensors
 
@@ -8,41 +8,26 @@ logger = logging.getLogger(__name__)
 
 PI_SCREEN_RESOLUTION = wx.Size(800, 480)
 
-# class DashboardApplication(wx.App):
-# 	def OnInit(self):
-# 		super().__init__()
-
 class DashboardFrame(wx.Frame):
 	def __init__(self):
 		super().__init__(parent=None, title="Dashboard", size=PI_SCREEN_RESOLUTION)
 
 		layout = wx.BoxSizer(wx.VERTICAL)
 
-		todaysWeather = weather.getWeather()
-		if todaysWeather:
-			logger.info("Adding weather")
-			weatherCode = int(todaysWeather[0]['W'])
-			weatherType = weather.getWeatherType(weatherCode) #returns tuple of name and image filename
-			weatherGraphic = wx.StaticBitmap(self, bitmap=wx.Bitmap(weatherType[1]))
-			weatherText = wx.StaticText(self, label=weatherType[0])
+		self.weatherGraphic = wx.StaticBitmap(self)
+		self.weatherText = wx.StaticText(self)
 
-			layout.Add(weatherText, 0, 0, 0)
-			layout.Add(weatherGraphic, 0, 0, 0)
-			if todaysWeather[1]:
-				rainText = wx.StaticText(self, label="{0}% chance of rain predicted at {1}".format(todaysWeather[1][1], todaysWeather[1][0]))
-				layout.Add(rainText, 0, 0, 0)
+		layout.Add(self.weatherText, 0, 0, 0)
+		layout.Add(self.weatherGraphic, 0, 0, 0)
 
-		todaysNews = news.getTop3Articles()
-		if todaysNews:
-			logger.info("Addng news")
-			updatedTime = todaysNews['updateTime']
-			newsTitle = wx.StaticText(self, label="News as of {0}".format(updatedTime))
-			layout.Add(newsTitle, 0, 0, 0)
-			headlines = []
-			for article in todaysNews['articles']:
-				headlines.append(article['title'])
-			newsList = wx.ListBox(self, choices=headlines)
-			layout.Add(newsList, 0, 0, 0)
+		self.rainText = wx.StaticText(self)
+		layout.Add(self.rainText, 0, 0, 0)
+		
+		self.newsTitle = wx.StaticText(self)
+		layout.Add(self.newsTitle, 0, 0, 0)
+		
+		self.newsList = wx.ListBox(self)
+		layout.Add(self.newsList, 1, wx.EXPAND | wx.ALL, 0)
 
 		powerButtons = wx.BoxSizer(wx.HORIZONTAL)
 		fanButton = wx.Button(self, wx.ID_ANY, "Fan")
@@ -53,30 +38,91 @@ class DashboardFrame(wx.Frame):
 		powerButtons.Add(heaterButton, 0, 0, 0)
 		layout.Add(powerButtons, 0, 0, 0)
 
-		powerUsage = wx.StaticText(self, label="Power usage yesterday: {0} kWh".format(power.getYesterdayPowerUse()))
-		layout.Add(powerUsage, 0, 0, 0)
+		self.powerUsage = wx.StaticText(self)
+		layout.Add(self.powerUsage, 0, 0, 0)
 
-		sensorReadings = sensors.getReadings()
-		flatConditions = wx.StaticText(self, label="Humidity: {0}%, Temperature: {1}℃".format(sensorReadings[0], sensorReadings[1]))
-		layout.Add(flatConditions, 0, 0, 0)
+		self.flatConditions = wx.StaticText(self)
+		layout.Add(self.flatConditions, 0, 0, 0)
 
-		traffic = routerstats.getTrafficStats()
-		downloadGB = round(traffic[1] / routerstats.bytesToGB, 2)
-		uploadGB = round(traffic[2] / routerstats.bytesToGB, 2)
-		trafficInfo = wx.StaticText(self, label="Traffic since {0}: {1} GB down, {2} GB up".format(traffic[0], downloadGB, uploadGB))
-		layout.Add(trafficInfo, 0, 0, 0)
+		
+		self.trafficInfo = wx.StaticText(self)
+		layout.Add(self.trafficInfo, 0, 0, 0)
 
-		WANIP = wx.StaticText(self, label="WAN IP: {0}".format(routerstats.getWANIP()))
-		layout.Add(WANIP, 0, 0, 0)
+		self.WANIP = wx.StaticText(self)
+		layout.Add(self.WANIP, 0, 0, 0)
 
-		pendingSMS = wx.StaticText(self, label="Pending SMS: {0}".format(routerstats.checkForSMS()))
-		layout.Add(pendingSMS, 0, 0, 0)
+		self.pendingSMS = wx.StaticText(self)
+		layout.Add(self.pendingSMS, 0, 0, 0)
 
-		signalStrength = wx.StaticText(self, label="4G Signal Strength: {0}/5".format(routerstats.getSignalStrength()))
-		layout.Add(signalStrength, 0, 0, 0)
+		self.signalStrength = wx.StaticText(self)
+		layout.Add(self.signalStrength, 0, 0, 0)
+
+		refreshButton=wx.Button(self, wx.ID_ANY, "Refresh")
+		refreshButton.Bind(wx.EVT_BUTTON, self.refreshButtonClick)
+		layout.Add(refreshButton, 0, 0, 0)
+
+		self.refreshAll()
 
 		self.SetSizer(layout)
 		self.Show()
+
+	def showWeather(self):
+		todaysWeather = weather.getWeather()
+		if todaysWeather:
+			logger.info("Adding weather")
+			weatherCode = int(todaysWeather[0]['W'])
+			weatherType = weather.getWeatherType(weatherCode) #returns tuple of name and image filename
+			self.weatherGraphic.SetBitmap(wx.Bitmap(weatherType[1]))
+			self.weatherText.SetLabelText(weatherType[0])
+			self.rainText.SetLabelText("{0}% chance of rain predicted at {1}".format(todaysWeather[1][1], todaysWeather[1][0]))
+	
+	def showNews(self):
+		todaysNews = news.getTop3Articles()
+		if todaysNews:
+			logger.info("Addng news")
+			updatedTime = todaysNews['updateTime']
+			headlines = []
+			for article in todaysNews['articles']:
+				headlines.append(article['title'])
+			self.newsTitle.SetLabelText("News as of {0}".format(time.strftime('%H:%M', updatedTime)))
+			self.newsList.SetItems(headlines)
+
+	def showPowerUse(self):
+		self.powerUsage.SetLabelText("Power usage yesterday: {0} kWh".format(power.getYesterdayPowerUse()))
+	
+	def showFlatConditions(self):
+		(humidity, temperature) = sensors.getReadings()
+		self.flatConditions.SetLabelText("Humidity: {0}%, Temperature: {1}℃".format(humidity, temperature))
+	
+	def showTrafficStats(self):
+		(refreshDate, downloadBytes, uploadBytes) = routerstats.getTrafficStats()
+		downloadGB = round(downloadBytes / routerstats.bytesToGB, 2)
+		uploadGB = round(uploadBytes / routerstats.bytesToGB, 2)
+		totalGB = round(downloadGB + uploadBytes, 2)
+		self.trafficInfo.SetLabelText("Traffic since {0}: {1} GB down, {2} GB up, total {3} GB".format(refreshDate, downloadGB, uploadGB, totalGB))
+	
+	def showWANIP(self):
+		self.WANIP.SetLabelText("WAN IP: {0}".format(routerstats.getWANIP()))
+	
+	def showPendingSMS(self):
+		self.pendingSMS.SetLabelText("Pending SMS: {0}".format(routerstats.checkForSMS()))
+	
+	def showSignalStrength(self):
+		self.signalStrength.SetLabelText("4G Signal Strength: {0}/5".format(routerstats.getSignalStrength()))
+	
+	def refreshButtonClick(self, event):
+		logger.debug("Refresh button clicked")
+		self.refreshAll()
+
+	def refreshAll(self):
+		self.showWeather()
+		self.showNews()
+		self.showPowerUse()
+		self.showFlatConditions()
+		self.showTrafficStats()
+		self.showWANIP()
+		self.showPendingSMS()
+		self.showSignalStrength()
 
 if __name__ == '__main__':
 	logger.debug("Starting up")

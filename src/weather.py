@@ -31,7 +31,7 @@ def getWeather():
 	today = weatherData['SiteRep']['DV']['Location']['Period'][0]
 	date = datetime.datetime.strptime(today['value'], '%Y-%m-%dZ')
 	reports = today['Rep']
-	rain = False
+	rain = (datetime.datetime.now(), 0)
 	for report in reports:
 		interval = datetime.timedelta(minutes=int(report['$'])) #$ in this instance being the time since midnight in minutes
 		reportTime = date + interval
