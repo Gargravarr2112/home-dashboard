@@ -1,6 +1,5 @@
 import feedparser
 import logging
-from datetime import datetime
 logger = logging.getLogger(__name__)
 
 bbcRSSFeed = "http://feeds.bbci.co.uk/news/rss.xml"

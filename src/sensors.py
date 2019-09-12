@@ -23,4 +23,4 @@ def logReadings(temperature, humidity):
 	logger.debug("Storing sensor values in database: {0}, {1}".format(temperature, humidity))
 	dbCursor = dbConn.cursor()
 	values = (humidity, temperature)
-	dbCursor.execute("INSERT INTO Readings(time, humidity, temperature) VALUES (date('now'), ?, ?)", values)
+	dbCursor.execute("INSERT INTO Readings(time, humidity, temperature) VALUES (datetime('now'), ?, ?)", values)

@@ -93,6 +93,7 @@ class DashboardFrame(wx.Frame):
 	def showFlatConditions(self):
 		(humidity, temperature) = sensors.getReadings()
 		self.flatConditions.SetLabelText("Humidity: {0}%, Temperature: {1}℃".format(humidity, temperature))
+		sensors.logReadings(humidity, temperature)
 	
 	def showTrafficStats(self):
 		(refreshDate, downloadBytes, uploadBytes) = routerstats.getTrafficStats()
