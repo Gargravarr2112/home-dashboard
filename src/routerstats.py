@@ -72,3 +72,10 @@ def getSignalStrength():
     return False
   tree = minidom.parseString(status.text)
   return int(tree.documentElement.getElementsByTagName('SignalIcon')[0].childNodes[0].data)
+
+#The B310 strictly enforces sessions for various APIs, but doesn't set an expiry on session cookies, so it's impossible to know the session has expired until 
+#the router returns an error. Even nicer, it doesn't return an HTTP error (e.g. 403) but instead an XML object containing the error message.
+#Call this after using all necessary methods in this file to clear the session so it starts fresh next time.
+def clearSession():
+  logger.debug("Closing session")
+  session.close()
