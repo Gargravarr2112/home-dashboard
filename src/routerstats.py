@@ -8,7 +8,7 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-routerIP = '192.168.1.1'
+routerIP = '192.168.0.1'
 bytesToGB = 1073741824
 bytesToMB = 1048576
 
