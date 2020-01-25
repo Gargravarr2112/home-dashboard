@@ -43,7 +43,7 @@ def getWeather():
 			rain = checkForRain(tomorrow)
 		nextThreeHours = today['Rep'][0]
 		return (nextThreeHours, rain)
-	except urllib3.exceptions.NewConnectionError as e:
+	except Exception as e:
 		logger.error("Failed to retrieve weather data")
 		logger.error(e)
 		return False
