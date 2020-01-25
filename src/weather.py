@@ -29,19 +29,24 @@ API_KEY = config['APIKey']
 def getWeather():
 	query = { 'key': API_KEY, 'res': '3hourly' }
 	logger.debug("Querying Met Office API for Oxford weather")
-	weatherRequest = requests.get(FORECAST_URL + str(METOFFICE_OXFORD_LOCATION_ID), params=query)
-	if weatherRequest.status_code != 200:
-		logger.error("Error retrieving weather: HTTP %d", weatherRequest.status_code)
-		return
-	weatherData = weatherRequest.json()
-	today = weatherData['SiteRep']['DV']['Location']['Period'][0]
-	rain = checkForRain(today)
-	if rain[1] == 0: #No rain today, so check tomorrow too
-		logger.debug("No rain predicted today, checking tomorrow")
-		tomorrow = weatherData['SiteRep']['DV']['Location']['Period'][1]
-		rain = checkForRain(tomorrow)
-	nextThreeHours = today['Rep'][0]
-	return (nextThreeHours, rain)
+	try:
+		weatherRequest = requests.get(FORECAST_URL + str(METOFFICE_OXFORD_LOCATION_ID), params=query)
+		if weatherRequest.status_code != 200:
+			logger.error("Error retrieving weather: HTTP %d", weatherRequest.status_code)
+			return
+		weatherData = weatherRequest.json()
+		today = weatherData['SiteRep']['DV']['Location']['Period'][0]
+		rain = checkForRain(today)
+		if rain[1] == 0: #No rain today, so check tomorrow too
+			logger.debug("No rain predicted today, checking tomorrow")
+			tomorrow = weatherData['SiteRep']['DV']['Location']['Period'][1]
+			rain = checkForRain(tomorrow)
+		nextThreeHours = today['Rep'][0]
+		return (nextThreeHours, rain)
+	except urllib3.exceptions.NewConnectionError as e:
+		logger.error("Failed to retrieve weather data")
+		logger.error(e)
+		return False
 
 def checkForRain(dayForecast):
 	date = datetime.datetime.strptime(dayForecast['value'], '%Y-%m-%dZ')

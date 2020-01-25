@@ -23,12 +23,17 @@ ENERGYHIVE_API_TOKEN = config["APIKey"]
 def getYesterdayPowerUse():
 	logger.debug("Querying EnergyHive API for power use data")
 	requestParameters = { "token": ENERGYHIVE_API_TOKEN, "period": "day", "offset": "-1" }
-	powerUse = requests.get(ENERGYHIVE_API, requestParameters)
-	if powerUse.status_code != 200:
-		logger.error("API returned HTTP %d", powerUse.status_code)
-		return 0
-	kWh = powerUse.json()['sum']
-	return float(kWh)
+	try:
+		powerUse = requests.get(ENERGYHIVE_API, requestParameters)
+		if powerUse.status_code != 200:
+			logger.error("API returned HTTP %d", powerUse.status_code)
+			return 0
+		kWh = powerUse.json()['sum']
+		return float(kWh)
+	except Exception as e:
+		logger.error("Failed to access EnergyHive API")
+		logger.error(e)
+		return False
 
 fan = Energenie(FAN_CHANNEL)
 heater = Energenie(HEATER_CHANNEL)
