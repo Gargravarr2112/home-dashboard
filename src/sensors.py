@@ -18,9 +18,11 @@ def createTable():
 	logger.debug("Creating SQLite DB table")
 	dbCursor = dbConn.cursor()
 	dbCursor.execute("CREATE TABLE IF NOT EXISTS Readings (time datetime, humidity real, temperature real)")
+	dbCursor.close()
 
 def logReadings(temperature, humidity):
 	logger.debug("Storing sensor values in database: {0}, {1}".format(temperature, humidity))
 	dbCursor = dbConn.cursor()
 	values = (humidity, temperature)
 	dbCursor.execute("INSERT INTO Readings(time, humidity, temperature) VALUES (datetime('now'), ?, ?)", values)
+	dbCursor.close()
