@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 
 PI_SCREEN_RESOLUTION = wx.Size(800, 480)
 
+NO_REFRESH_PERIOD = [(22, 8)] #hours
+
 class DashboardFrame(wx.Frame):
 	def __init__(self):
 		super().__init__(parent=None, title="Dashboard", size=PI_SCREEN_RESOLUTION)
@@ -194,6 +196,11 @@ class DashboardFrame(wx.Frame):
 			self.clock.SetValue(ts)
 		elif event.GetTimer().GetId() == 2:
 			logger.debug("Refresh timer triggered")
+			for start, end in NO_REFRESH_PERIOD: #Allows multiple periods, e.g. work, sleep
+				timeNow = datetime.now()
+				if timeNow.hour >= start and timeNow.hour < end:
+					logger.debug("Skipping auto refresh due to excluded times")
+					return
 			self.refreshAll()
 
 if __name__ == '__main__':
