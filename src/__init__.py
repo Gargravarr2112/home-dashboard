@@ -80,12 +80,13 @@ class DashboardFrame(wx.Frame):
 		self.signalStrength.SetFont(textStyle)
 		layout.Add(self.signalStrength, 0, 0, 0)
 
+		refreshBox = wx.BoxSizer(wx.HORIZONTAL)
 		refreshButton = wx.Button(self, wx.ID_ANY, "Refresh")
 		refreshButton.Bind(wx.EVT_BUTTON, self.refreshButtonClick)
-		layout.Add(refreshButton, 0, 0, 0)
-
+		refreshBox.Add(refreshButton, 0, 0, 0)
 		self.refreshTime = wx.StaticText(self)
-		layout.Add(self.refreshTime)
+		refreshBox.Add(self.refreshTime, 0, 0, 0)
+		layout.Add(refreshBox, 0, 0, 0)
 
 		self.refreshedTime = datetime.datetime.min
 
@@ -132,7 +133,9 @@ class DashboardFrame(wx.Frame):
 			logger.error("Unable to display news")
 
 	def showPowerUse(self):
-		self.powerUsage.SetLabelText("Power usage yesterday: {0} kWh".format(power.getYesterdayPowerUse()))
+		kWh, costPence = power.getYesterdayPowerUse()
+		costPounds = round(costPence / 100, 2)
+		self.powerUsage.SetLabelText("Power usage yesterday: {0} kWh, £{1}".format(kWh, costPounds))
 	
 	def showFlatConditions(self):
 		(humidity, temperature) = sensors.getReadings()
@@ -144,13 +147,20 @@ class DashboardFrame(wx.Frame):
 		downloadGB = round(downloadBytes / routerstats.bytesToGB, 2)
 		uploadGB = round(uploadBytes / routerstats.bytesToGB, 2)
 		totalGB = round(downloadGB + uploadGB, 2)
-		self.trafficInfo.SetLabelText("Traffic since {0}: {1} GB down, {2} GB up, total {3} GB".format(refreshDate.strftime('%a %m %b'), downloadGB, uploadGB, totalGB))
+		if downloadBytes > routerstats.monthlyLimitBytes or uploadBytes > routerstats.monthlyLimitBytes:
+			self.trafficInfo.SetLabelMarkup("<span foreground='red'>Traffic since {0}: <big>{1}</big> GB down, <big>{2}</big> GB up, total <big>{3}</big> GB</span>".format(refreshDate.strftime('%a %m %b'), downloadGB, uploadGB, totalGB))
+		else:
+			self.trafficInfo.SetLabelText("Traffic since {0}: {1} GB down, {2} GB up, total {3} GB".format(refreshDate.strftime('%a %m %b'), downloadGB, uploadGB, totalGB))
 	
 	def showWANIP(self):
 		self.WANIP.SetLabelText("WAN IP: {0}".format(routerstats.getWANIP()))
 	
 	def showPendingSMS(self):
-		self.pendingSMS.SetLabelText("Pending SMS: {0}".format(routerstats.checkForSMS()))
+		pendingSMSCount = routerstats.checkForSMS()
+		if pendingSMSCount == 0:
+			self.pendingSMS.SetLabelText("Pending SMS: {0}".format(pendingSMSCount))
+		else:
+			self.pendingSMS.SetLabelMarkup("<span foreground='red'>Pending SMS: <big>{0}</big></span>")
 	
 	def showSignalStrength(self):
 		self.signalStrength.SetLabelText("4G Signal Strength: {0}/5".format(routerstats.getSignalStrength()))
