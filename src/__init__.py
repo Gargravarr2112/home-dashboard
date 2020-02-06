@@ -197,7 +197,7 @@ class DashboardFrame(wx.Frame):
 		elif event.GetTimer().GetId() == 2:
 			logger.debug("Refresh timer triggered")
 			for start, end in NO_REFRESH_PERIOD: #Allows multiple periods, e.g. work, sleep
-				timeNow = datetime.now()
+				timeNow = datetime.datetime.now()
 				if timeNow.hour >= start and timeNow.hour < end:
 					logger.debug("Skipping auto refresh due to excluded times")
 					return
