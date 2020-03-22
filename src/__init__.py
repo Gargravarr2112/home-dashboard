@@ -2,7 +2,7 @@
 import wx, requests, json, datetime, time, logging
 from wx import gizmos
 #Custom modules
-import weather, news, power, routerstats, sensors
+import weather, news, power, routerstats, sensors, coronavirus
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -43,6 +43,10 @@ class DashboardFrame(wx.Frame):
 		self.newsTitle = wx.StaticText(self)
 		self.newsTitle.SetFont(textStyle)
 		layout.Add(self.newsTitle, 0, 0, 0)
+
+		self.coronavirusText = wx.StaticText(self)
+		self.coronavirusText.SetFont(textStyle)
+		layout.Add(self.coronavirusText, 0, 0, 0)
 		
 		self.newsList = wx.ListBox(self)
 		self.newsList.SetFont(textStyle)
@@ -121,6 +125,16 @@ class DashboardFrame(wx.Frame):
 		else:
 			logger.error("Unable to display weather")
 	
+	def showCorona(self):
+		logger.info("Refreshing coronavirus cases")
+		corona = coronavirus.lookupOxfordshire()
+		if corona:
+			cases, population, updated = corona
+			percent = round((cases / population) * 100, 2)
+			self.coronavirusText.SetLabelText("Oxfordshire coronavirus cases: {0} / {1} ({2}%) as of {3}".format(cases, population, percent, updated))
+		else:
+			logger.error("Unable to update corona stats")
+
 	def showNews(self):
 		logger.info("Getting news")
 		todaysNews = news.getTop3Articles()
@@ -160,9 +174,9 @@ class DashboardFrame(wx.Frame):
 	def showPendingSMS(self):
 		pendingSMSCount = routerstats.checkForSMS()
 		if pendingSMSCount == 0:
-			self.pendingSMS.SetLabelText("Pending SMS: {0}".format(pendingSMSCount))
+			self.pendingSMS.SetLabelText("Pending SMS: 0")
 		else:
-			self.pendingSMS.SetLabelMarkup("<span foreground='red'>Pending SMS: <big>{0}</big></span>")
+			self.pendingSMS.SetLabelMarkup("<span foreground='red'>Pending SMS: <big>{0}</big></span>".format(pendingSMSCount))
 	
 	def showSignalStrength(self):
 		self.signalStrength.SetLabelText("4G Signal Strength: {0}/5".format(routerstats.getSignalStrength()))
@@ -177,6 +191,7 @@ class DashboardFrame(wx.Frame):
 	def refreshAll(self):
 		self.showWeather()
 		self.showNews()
+		self.showCorona()
 		self.showPowerUse()
 		self.showFlatConditions()
 		self.showTrafficStats()
