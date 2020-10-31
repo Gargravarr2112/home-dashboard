@@ -16,3 +16,12 @@ class Energenie:
   def off(self):
     self.value = False
     return False
+
+class serial:
+  class Serial:
+    def __init__(self, port, timeout):
+      pass
+    def write(self, value):
+      pass
+    def read(self, length):
+      return []
