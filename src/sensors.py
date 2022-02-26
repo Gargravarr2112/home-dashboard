@@ -16,6 +16,7 @@ def connectDB():
 		with open('sql.json', 'r') as configFile:
 			sqlConfig = json.load(configFile)
 		dbConn = MySQLdb.connect(host=sqlConfig['host'], user=sqlConfig['user'], password=sqlConfig['password'], db=sqlConfig['db'])
+		dbConn.autocommit(True)
 		return dbConn.cursor()
 	except Exception as e:
 		logger.critical("Unable to connect to MySQL database: {0}".format(e))
@@ -50,15 +51,14 @@ def main():
 	while (True):
 		current = sensor.get()
 		if current:
-			dbCursor.execute("INSERT INTO sensorReading(sensorID, value, time) VALUES (6, %s, NOW()), (7, %s, NOW())", (current['ppa'], current['temp']))
+			dbCursor.execute("INSERT INTO sensorReading(sensorID, unitID, value, time) VALUES (1, 6, %s, NOW()), (1, 7, %s, NOW())", (current['ppa'], current['temp']))
 		else:
 			logger.error("Failed to get CO2 sensor readings")
 		humidTemp = getTempReadings()
 		if humidTemp:
-			dbCursor.execute("INSERT INTO sensorReading(sensorID, value, time) VALUES (2, %s, NOW()), (1, %s, NOW())", humidTemp)
+			dbCursor.execute("INSERT INTO sensorReading(sensorID, unitID, value, time) VALUES (1, 2, %s, NOW()), (1, 1, %s, NOW())", humidTemp)
 		else:
 			logger.error("Failed to get temperature/humidity readings")
-		dbConn.commit()
 		time.sleep(300)
 	dbConn.close()
 
