@@ -1,6 +1,6 @@
 {
-  "host": "",
-  "user": "",
-  "password": "",
-  "db":""
+  "host": "excalibur",
+  "user": "helios",
+  "password": "q7HEW7R75wRZ74GlleBQvtqyKQ88PLlg",
+  "db":"automation"
 }
